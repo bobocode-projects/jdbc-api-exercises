@@ -10,5 +10,5 @@ It is important to have a different type of activities, which purpose is improvi
 
 ***An exercise** is a predefined task that you continuously implement to improve a certain skill* :muscle:
 ##
-* 
+* [Product DAO](https://github.com/bobocode-projects/jdbc-api-exercises/tree/master/product-dao)
 
