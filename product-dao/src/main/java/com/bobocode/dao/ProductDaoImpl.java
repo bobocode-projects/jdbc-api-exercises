@@ -1,12 +1,27 @@
 package com.bobocode.dao;
 
+import com.bobocode.exception.DaoOperationException;
 import com.bobocode.model.Product;
 
 import javax.sql.DataSource;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import static java.lang.String.format;
 
 public class ProductDaoImpl implements ProductDao {
     private DataSource dataSource;
+
+    private static final String FIND_ALL_QUERY = "select * from products";
+    private static final String FIND_ONE_BY_ID_QUERY = "select * from products where id = ?";
+    private static final String UPDATE_QUERY = "update products set name = ?, producer = ?," +
+            "price = ?, expiration_date = ? where id = ?";
+    private static final String REMOVE_PRODUCT_QUERY = "delete from products where id = ?";
+    private static final String INSERT_PRODUCT_QUERY = "insert into " +
+            "products (name, producer, price, expiration_date) " +
+            "values (?, ?, ?, ?)";
 
     public ProductDaoImpl(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -14,27 +29,119 @@ public class ProductDaoImpl implements ProductDao {
 
     @Override
     public void save(Product product) {
-        throw new UnsupportedOperationException("None of these methods will work unless you implement them!");// todo
+        try(Connection connection = dataSource.getConnection()) {
+            save(product, connection);
+        } catch (SQLException e) {
+            throw new DaoOperationException(format("Error saving product: %s", product));
+        }
+    }
+
+    private void save(Product product, Connection connection) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(INSERT_PRODUCT_QUERY, PreparedStatement.RETURN_GENERATED_KEYS);
+        prepareSaveStatement(product, statement);
+        fetchInsertStatementId(product, statement);
+    }
+
+    private void prepareSaveStatement(Product product, PreparedStatement statement) throws SQLException {
+        statement.setString(1, product.getName());
+        statement.setString(2, product.getProducer());
+        statement.setBigDecimal(3, product.getPrice());
+        statement.setDate(4, Date.valueOf(product.getExpirationDate()));
+        statement.executeUpdate();
+    }
+
+    private void fetchInsertStatementId(Product product, PreparedStatement statement) throws SQLException {
+        ResultSet resultSet = statement.getGeneratedKeys();
+        if (resultSet.next()) {
+            product.setId(resultSet.getLong(1));
+        }
     }
 
     @Override
     public List<Product> findAll() {
-        throw new UnsupportedOperationException("None of these methods will work unless you implement them!");// todo
+        try(Connection connection = dataSource.getConnection()) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(FIND_ALL_QUERY);
+            return mapToProduct(resultSet);
+        } catch (SQLException e) {
+            throw new DaoOperationException(format("Failed to get all element, ex: %s", e.getMessage()), e);
+        }
+    }
+
+    private List<Product> mapToProduct(ResultSet resultSet) throws SQLException {
+        List<Product> list = new ArrayList<>();
+
+        while (resultSet.next()){
+            Product product = Product.builder()
+                    .id(resultSet.getLong(1))
+                    .name(resultSet.getString(2))
+                    .producer(resultSet.getString(3))
+                    .price(resultSet.getBigDecimal(4))
+                    .expirationDate(resultSet.getDate(5).toLocalDate())
+                    .creationTime(resultSet.getDate(6).toLocalDate().atStartOfDay())
+                    .build();
+            list.add(product);
+        }
+
+        return list;
     }
 
     @Override
     public Product findOne(Long id) {
-        throw new UnsupportedOperationException("None of these methods will work unless you implement them!");// todo
+        try(Connection connection = dataSource.getConnection()) {
+            ResultSet resultSet = prepareFindQuery(connection, id);
+            List<Product> list = mapToProduct(resultSet);
+            if (list.isEmpty()) {
+                throw new DaoOperationException(format("Product with id = %d does not exist", id));
+            }
+
+            return list.get(0);
+        } catch (SQLException e) {
+            throw new DaoOperationException(format("Failed to get all element, ex: %s", e.getMessage()), e);
+        }
+    }
+
+    private ResultSet prepareFindQuery(Connection connection, Long id) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(FIND_ONE_BY_ID_QUERY);
+        statement.setLong(1, id);
+        return statement.executeQuery();
     }
 
     @Override
     public void update(Product product) {
-        throw new UnsupportedOperationException("None of these methods will work unless you implement them!");// todo
+        try(Connection connection = dataSource.getConnection()){
+            if (Objects.isNull(product.getId())) {
+                throw new DaoOperationException("Cannot find a product without ID");
+            }
+            update(connection, product);
+        } catch (SQLException e) {
+            throw new DaoOperationException(format("Failed to get all element, ex: %s", e.getMessage()), e);
+        }
+    }
+
+    private void update(Connection connection, Product product) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY);
+        statement.setString(1, product.getName());
+        statement.setString(2, product.getProducer());
+        statement.setBigDecimal(3, product.getPrice());
+        statement.setDate(4, Date.valueOf(product.getExpirationDate()));
+        statement.setLong(5, product.getId());
+        statement.executeUpdate();
     }
 
     @Override
     public void remove(Product product) {
-        throw new UnsupportedOperationException("None of these methods will work unless you implement them!");// todo
+        try(Connection connection = dataSource.getConnection()){
+            if (Objects.isNull(product.getId())) {
+                throw new DaoOperationException("Cannot find a product without ID");
+            }
+
+            PreparedStatement statement = connection.prepareStatement(REMOVE_PRODUCT_QUERY);
+            statement.setLong(1, product.getId());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DaoOperationException(format("Product with id = %d does not exist", product.getId()));
+        }
     }
 
 }
