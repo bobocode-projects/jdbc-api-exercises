@@ -4,12 +4,17 @@ import com.bobocode.exception.DaoOperationException;
 import com.bobocode.model.Product;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 
 public class ProductDaoImpl implements ProductDao {
     private DataSource dataSource;
@@ -60,12 +65,16 @@ public class ProductDaoImpl implements ProductDao {
     @Override
     public List<Product> findAll() {
         try(Connection connection = dataSource.getConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(FIND_ALL_QUERY);
-            return mapToProduct(resultSet);
+            return findAll(connection);
         } catch (SQLException e) {
             throw new DaoOperationException(format("Failed to get all element, ex: %s", e.getMessage()), e);
         }
+    }
+
+    private List<Product> findAll(Connection connection) throws SQLException {
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(FIND_ALL_QUERY);
+        return mapToProduct(resultSet);
     }
 
     private List<Product> mapToProduct(ResultSet resultSet) throws SQLException {
@@ -89,30 +98,30 @@ public class ProductDaoImpl implements ProductDao {
     @Override
     public Product findOne(Long id) {
         try(Connection connection = dataSource.getConnection()) {
-            ResultSet resultSet = prepareFindQuery(connection, id);
-            List<Product> list = mapToProduct(resultSet);
-            if (list.isEmpty()) {
-                throw new DaoOperationException(format("Product with id = %d does not exist", id));
-            }
-
+            List<Product> list = findOne(connection, id);
+            validateFindOneResult(list, id);
             return list.get(0);
         } catch (SQLException e) {
             throw new DaoOperationException(format("Failed to get all element, ex: %s", e.getMessage()), e);
         }
     }
 
-    private ResultSet prepareFindQuery(Connection connection, Long id) throws SQLException {
+    private List<Product> findOne(Connection connection, Long id) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(FIND_ONE_BY_ID_QUERY);
         statement.setLong(1, id);
-        return statement.executeQuery();
+        return mapToProduct(statement.executeQuery());
+    }
+
+    private void validateFindOneResult(List resultList, Long id) {
+        if (resultList.isEmpty()) {
+            throw new DaoOperationException(format("Product with id = %d does not exist", id));
+        }
     }
 
     @Override
     public void update(Product product) {
         try(Connection connection = dataSource.getConnection()){
-            if (Objects.isNull(product.getId())) {
-                throw new DaoOperationException("Cannot find a product without ID");
-            }
+            validateProduct(product);
             update(connection, product);
         } catch (SQLException e) {
             throw new DaoOperationException(format("Failed to get all element, ex: %s", e.getMessage()), e);
@@ -132,15 +141,22 @@ public class ProductDaoImpl implements ProductDao {
     @Override
     public void remove(Product product) {
         try(Connection connection = dataSource.getConnection()){
-            if (Objects.isNull(product.getId())) {
-                throw new DaoOperationException("Cannot find a product without ID");
-            }
-
-            PreparedStatement statement = connection.prepareStatement(REMOVE_PRODUCT_QUERY);
-            statement.setLong(1, product.getId());
-            statement.executeUpdate();
+            validateProduct(product);
+            remove(connection, product);
         } catch (SQLException e) {
             throw new DaoOperationException(format("Product with id = %d does not exist", product.getId()));
+        }
+    }
+
+    private void remove(Connection connection, Product product) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(REMOVE_PRODUCT_QUERY);
+        statement.setLong(1, product.getId());
+        statement.executeUpdate();
+    }
+
+    private void validateProduct(Product product) {
+        if (isNull(product.getId())) {
+            throw new DaoOperationException("Cannot find a product without ID");
         }
     }
 
