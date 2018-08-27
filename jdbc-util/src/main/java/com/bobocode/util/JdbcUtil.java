@@ -26,7 +26,7 @@ public class JdbcUtil {
     }
 
     private static String formatH2ImMemoryDbUrl(String databaseName) {
-        return String.format("jdbc:h2:mem:%s;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false", databaseName);
+        return String.format("jdbc:h2:mem:%s;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;DATABASE_TO_UPPER=false;", databaseName);
     }
 
     public static DataSource createDefaultPostgresDataSource() {

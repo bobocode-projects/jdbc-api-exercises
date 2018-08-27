@@ -11,7 +11,9 @@
 
     <modules>
         <module>jdbc-util</module>
+        <module>jdbc-account-data</module>
         <module>product-dao</module>
+        <module>account-db-initializer</module>
     </modules>
 
     <properties>
