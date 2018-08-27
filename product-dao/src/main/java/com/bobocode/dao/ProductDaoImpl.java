@@ -42,17 +42,18 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     private void save(Product product, Connection connection) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(INSERT_PRODUCT_QUERY, PreparedStatement.RETURN_GENERATED_KEYS);
-        prepareSaveStatement(product, statement);
+        PreparedStatement statement = prepareSaveStatement(connection, product);
         fetchInsertStatementId(product, statement);
     }
 
-    private void prepareSaveStatement(Product product, PreparedStatement statement) throws SQLException {
+    private PreparedStatement prepareSaveStatement(Connection connection, Product product) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(INSERT_PRODUCT_QUERY, PreparedStatement.RETURN_GENERATED_KEYS);
         statement.setString(1, product.getName());
         statement.setString(2, product.getProducer());
         statement.setBigDecimal(3, product.getPrice());
         statement.setDate(4, Date.valueOf(product.getExpirationDate()));
         statement.executeUpdate();
+        return statement;
     }
 
     private void fetchInsertStatementId(Product product, PreparedStatement statement) throws SQLException {
@@ -74,21 +75,14 @@ public class ProductDaoImpl implements ProductDao {
     private List<Product> findAll(Connection connection) throws SQLException {
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery(FIND_ALL_QUERY);
-        return mapToProduct(resultSet);
+        return mapToProductList(resultSet);
     }
 
-    private List<Product> mapToProduct(ResultSet resultSet) throws SQLException {
+    private List<Product> mapToProductList(ResultSet resultSet) throws SQLException {
         List<Product> list = new ArrayList<>();
 
         while (resultSet.next()){
-            Product product = Product.builder()
-                    .id(resultSet.getLong(1))
-                    .name(resultSet.getString(2))
-                    .producer(resultSet.getString(3))
-                    .price(resultSet.getBigDecimal(4))
-                    .expirationDate(resultSet.getDate(5).toLocalDate())
-                    .creationTime(resultSet.getDate(6).toLocalDate().atStartOfDay())
-                    .build();
+            Product product = mapToProduct(resultSet);
             list.add(product);
         }
 
@@ -98,24 +92,34 @@ public class ProductDaoImpl implements ProductDao {
     @Override
     public Product findOne(Long id) {
         try(Connection connection = dataSource.getConnection()) {
-            List<Product> list = findOne(connection, id);
-            validateFindOneResult(list, id);
-            return list.get(0);
+            return findOne(connection, id);
         } catch (SQLException e) {
             throw new DaoOperationException(format("Failed to get all element, ex: %s", e.getMessage()), e);
         }
     }
 
-    private List<Product> findOne(Connection connection, Long id) throws SQLException {
+    private Product findOne(Connection connection, Long id) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(FIND_ONE_BY_ID_QUERY);
         statement.setLong(1, id);
-        return mapToProduct(statement.executeQuery());
-    }
+        ResultSet resultSet = statement.executeQuery();
 
-    private void validateFindOneResult(List resultList, Long id) {
-        if (resultList.isEmpty()) {
+        boolean isProductPresent = resultSet.next();
+        if (isProductPresent) {
+            return mapToProduct(resultSet);
+        } else {
             throw new DaoOperationException(format("Product with id = %d does not exist", id));
         }
+    }
+
+    private Product mapToProduct(ResultSet resultSet) throws SQLException {
+        return Product.builder()
+                .id(resultSet.getLong(1))
+                .name(resultSet.getString(2))
+                .producer(resultSet.getString(3))
+                .price(resultSet.getBigDecimal(4))
+                .expirationDate(resultSet.getDate(5).toLocalDate())
+                .creationTime(resultSet.getDate(6).toLocalDate().atStartOfDay())
+                .build();
     }
 
     @Override
