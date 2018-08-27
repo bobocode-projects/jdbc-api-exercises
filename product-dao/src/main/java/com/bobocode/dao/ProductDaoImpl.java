@@ -60,6 +60,8 @@ public class ProductDaoImpl implements ProductDao {
         ResultSet resultSet = statement.getGeneratedKeys();
         if (resultSet.next()) {
             product.setId(resultSet.getLong(1));
+        } else {
+            throw new DaoOperationException("Failed to save product");
         }
     }
 
@@ -102,7 +104,10 @@ public class ProductDaoImpl implements ProductDao {
         PreparedStatement statement = connection.prepareStatement(FIND_ONE_BY_ID_QUERY);
         statement.setLong(1, id);
         ResultSet resultSet = statement.executeQuery();
+        return validateFindOneResult(resultSet, id);
+    }
 
+    private Product validateFindOneResult(ResultSet resultSet, Long id) throws SQLException {
         boolean isProductPresent = resultSet.next();
         if (isProductPresent) {
             return mapToProduct(resultSet);
