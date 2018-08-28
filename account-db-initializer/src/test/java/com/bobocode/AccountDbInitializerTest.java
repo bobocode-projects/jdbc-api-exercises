@@ -55,7 +55,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testPrimaryKeyBasedOnIdField() throws SQLException {
+    public void testPrimaryKeyHasCorrectName() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -69,7 +69,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testPrimaryKeyHasCorrectName() throws SQLException {
+    public void testPrimaryKeyBasedOnIdField() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
