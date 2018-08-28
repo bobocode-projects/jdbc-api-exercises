@@ -156,6 +156,7 @@ public class ProductDaoTest {
         long invalidId = -1L;
         try {
             productDao.findOne(invalidId);
+            fail("Exception was't thrown");
         } catch (Exception e) {
             assertEquals(DaoOperationException.class, e.getClass());
             assertEquals(String.format("Product with id = %d does not exist", invalidId), e.getMessage());
@@ -210,6 +211,7 @@ public class ProductDaoTest {
 
         try {
             productDao.update(notStoredProduct);
+            fail("Exception was't thrown");
         } catch (Exception e) {
             assertEquals(DaoOperationException.class, e.getClass());
             assertEquals("Cannot find a product without ID", e.getMessage());
@@ -224,6 +226,7 @@ public class ProductDaoTest {
 
         try {
             productDao.update(testProduct);
+            fail("Exception was't thrown");
         } catch (Exception e) {
             assertEquals(DaoOperationException.class, e.getClass());
             assertEquals(String.format("Product with id = %d does not exist", invalidId), e.getMessage());
@@ -249,6 +252,7 @@ public class ProductDaoTest {
 
         try {
             productDao.remove(notStoredProduct);
+            fail("Exception was't thrown");
         } catch (Exception e) {
             assertEquals(DaoOperationException.class, e.getClass());
             assertEquals("Cannot find a product without ID", e.getMessage());
@@ -263,6 +267,7 @@ public class ProductDaoTest {
 
         try {
             productDao.remove(testProduct);
+            fail("Exception was't thrown");
         } catch (Exception e) {
             assertEquals(DaoOperationException.class, e.getClass());
             assertEquals(String.format("Product with id = %d does not exist", invalidId), e.getMessage());
