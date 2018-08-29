@@ -13,4 +13,5 @@ It is important to have a different type of activities, which purpose is improvi
 * [Product DAO](https://github.com/bobocode-projects/jdbc-api-exercises/tree/master/product-dao)
 * [Account db initializer](https://github.com/bobocode-projects/jdbc-api-exercises/tree/master/account-db-initializer)
 * [Wall Street db initializer](https://github.com/bobocode-projects/jdbc-api-exercises/tree/master/wall-street-db-initializer)
+* [User profiles db initializer](https://github.com/bobocode-projects/jdbc-api-exercises/tree/master/user-profile-db-initializer)
 
