@@ -15,6 +15,7 @@
         <module>product-dao</module>
         <module>account-db-initializer</module>
         <module>wall-street-db-initializer</module>
+        <module>user-profile-db-initializer</module>
     </modules>
 
     <properties>
