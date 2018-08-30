@@ -371,19 +371,18 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerSaleGroupTableHasCorrectUniqueConstraint() throws SQLException {
+    public void testBrokerSaleGroupTableHasCompositePrimaryKey() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-                    " WHERE table_name = 'broker_sales_group' AND constraint_type = 'UNIQUE';");
+                    " WHERE table_name = 'broker_sales_group' AND constraint_type = 'PRIMARY_KEY';");
 
             resultSet.next();
             String uniqueConstraintName = resultSet.getString("constraint_name");
             String uniqueConstraintColumn = resultSet.getString("column_list");
 
-            assertThat(uniqueConstraintName, equalTo("UQ_broker_sales_group_broker_id_sales_group_id"));
+            assertThat(uniqueConstraintName, equalTo("PK_broker_sales_group"));
             assertThat(uniqueConstraintColumn, equalTo("broker_id,sales_group_id"));
         }
-
     }
 }
