@@ -47,8 +47,8 @@ CREATE TABLE IF NOT EXISTS sales_group (
 CREATE TABLE IF NOT EXISTS broker_sales_group (
   broker_id      BIGINT NOT NULL,
   sales_group_id BIGINT NOT NULL,
+  CONSTRAINT PK_broker_sales_group PRIMARY KEY (broker_id, sales_group_id),
   CONSTRAINT FK_broker_sales_group_broker FOREIGN KEY (broker_id) REFERENCES broker,
-  CONSTRAINT FK_broker_sales_group_sales_group FOREIGN KEY (sales_group_id) REFERENCES sales_group,
-  CONSTRAINT UQ_broker_sales_group_broker_id_sales_group_id UNIQUE (broker_id, sales_group_id)
+  CONSTRAINT FK_broker_sales_group_sales_group FOREIGN KEY (sales_group_id) REFERENCES sales_group
 );
 
