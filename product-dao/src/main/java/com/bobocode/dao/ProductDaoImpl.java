@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Objects;
 
 public class ProductDaoImpl implements ProductDao {
-    private static String INSERT_SQL = "INSERT INTO products(name, producer, price, expiration_date) VALUES (?, ?, ?, ?);";
-    private static String SELECT_ALL_SQL = "SELECT * FROM products;";
-    private static String SELECT_BY_ID_SQL = "SELECT * FROM products WHERE id = ?;";
-    private static String UPDATE_BY_ID_SLQ = "UPDATE products SET name = ?, producer = ?, price = ?, expiration_date = ? WHERE id = ?;";
-    private static String REMOVE__BY_ID_SQL = "DELETE FROM products WHERE id = ?;";
+    private static final String INSERT_SQL = "INSERT INTO products(name, producer, price, expiration_date) VALUES (?, ?, ?, ?);";
+    private static final String SELECT_ALL_SQL = "SELECT * FROM products;";
+    private static final String SELECT_BY_ID_SQL = "SELECT * FROM products WHERE id = ?;";
+    private static final String UPDATE_BY_ID_SLQ = "UPDATE products SET name = ?, producer = ?, price = ?, expiration_date = ? WHERE id = ?;";
+    private static final String REMOVE_BY_ID_SQL = "DELETE FROM products WHERE id = ?;";
 
     private DataSource dataSource;
 
@@ -130,9 +130,12 @@ public class ProductDaoImpl implements ProductDao {
     private Product findProductById(Long id, Connection connection) throws SQLException {
         PreparedStatement selectByIdStatement = prepareSelectByIdStatement(id, connection);
         ResultSet resultSet = selectByIdStatement.executeQuery();
-        return retrieveResult(resultSet, id);
+        if (resultSet.next()) {// we need to call next() since cursor is located before the first line
+            return parseRow(resultSet);
+        } else { // if next() returned false it means that database returned an empty response
+            throw new DaoOperationException(String.format("Product with id = %d does not exist", id));
+        }
     }
-
 
     private PreparedStatement prepareSelectByIdStatement(Long id, Connection connection) {
         try {
@@ -141,16 +144,6 @@ public class ProductDaoImpl implements ProductDao {
             return selectByIdStatement;
         } catch (SQLException e) {
             throw new DaoOperationException(String.format("Cannot prepare select by id statement for id = %d", id), e);
-        }
-    }
-
-    private Product retrieveResult(ResultSet resultSet, Long id) throws SQLException {
-        // before parsing ResultSet we need to call next() since cursor is located before the first line
-        boolean resultIsNotEmpty = resultSet.next();
-        if (resultIsNotEmpty) {
-            return parseRow(resultSet);
-        } else { // if next() returned false it means that database returned an empty response
-            throw new DaoOperationException(String.format("Product with id = %d does not exist", id));
         }
     }
 
@@ -165,7 +158,7 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     private void updateProduct(Product product, Connection connection) throws SQLException {
-        checkIfExists(product, connection);
+        verifyProductId(product, connection);
         PreparedStatement updateStatement = prepareUpdateStatement(product, connection);
         executeUpdate(updateStatement);
     }
@@ -195,14 +188,14 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     private void removeProduct(Product product, Connection connection) throws SQLException {
-        checkIfExists(product, connection);
+        verifyProductId(product, connection);
         PreparedStatement removeStatement = prepareRemoveStatement(product, connection);
         executeUpdate(removeStatement);
     }
 
     private PreparedStatement prepareRemoveStatement(Product product, Connection connection) {
         try {
-            PreparedStatement removeStatement = connection.prepareStatement(REMOVE__BY_ID_SQL);
+            PreparedStatement removeStatement = connection.prepareStatement(REMOVE_BY_ID_SQL);
             removeStatement.setLong(1, product.getId());
             return removeStatement;
         } catch (SQLException e) {
@@ -210,7 +203,8 @@ public class ProductDaoImpl implements ProductDao {
         }
     }
 
-    private void checkIfExists(Product product, Connection connection) throws SQLException {
+    // todo: optimize
+    private void verifyProductId(Product product, Connection connection) throws SQLException {
         if (product.getId() == null) {
             throw new DaoOperationException("Cannot find a product without ID");
         }
