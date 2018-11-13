@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductDaoImpl implements ProductDao {
-    private static final String SAVE_PRODUCT = "INSERT INTO products(name, producer, price, expiration_date) VALUES (?,?,?,?);";
-    private static final String LIST_ALL_PRODUCTS = "SELECT * FROM products;";
-    private static final String FIND_PRODUCT_BY_ID = "SELECT * FROM products where id = ?;";
-    private static final String UPDATE_PRODUCT_BY_ID = "UPDATE products SET name = ?, producer = ?, price = ?, expiration_date = ? WHERE id = ?;";
-    private static final String REMOVE_PRODUCT_BY_ID = "DELETE FROM products where id = ?;";
+    private static final String SAVE_PRODUCT_QUERY = "INSERT INTO products(name, producer, price, expiration_date) VALUES (?,?,?,?);";
+    private static final String LIST_ALL_PRODUCTS_QUERY = "SELECT * FROM products;";
+    private static final String FIND_PRODUCT_BY_ID_QUERY = "SELECT * FROM products where id = ?;";
+    private static final String UPDATE_PRODUCT_BY_ID_QUERY = "UPDATE products SET name = ?, producer = ?, price = ?, expiration_date = ? WHERE id = ?;";
+    private static final String REMOVE_PRODUCT_BY_ID_QUERY = "DELETE FROM products where id = ?;";
 
     private DataSource dataSource;
 
@@ -28,7 +28,7 @@ public class ProductDaoImpl implements ProductDao {
     @Override
     public void save(Product product) {
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement saveProduct = connection.prepareStatement(SAVE_PRODUCT, PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement saveProduct = connection.prepareStatement(SAVE_PRODUCT_QUERY, PreparedStatement.RETURN_GENERATED_KEYS);
             setValues(saveProduct, product);
             saveProduct.executeUpdate();
             Long generatedId = getGeneratedKey(saveProduct);
@@ -56,64 +56,61 @@ public class ProductDaoImpl implements ProductDao {
     public List<Product> findAll() {
         List<Product> products = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement findALL = connection.prepareStatement(LIST_ALL_PRODUCTS);
+            PreparedStatement findALL = connection.prepareStatement(LIST_ALL_PRODUCTS_QUERY);
             ResultSet findAllResultSet = findALL.executeQuery();
-            while (findAllResultSet.next()) {
-                Product product = new Product();
-                product.setId(findAllResultSet.getLong(1));
-                product.setName(findAllResultSet.getString(2));
-                product.setProducer(findAllResultSet.getString(3));
-                product.setPrice(findAllResultSet.getBigDecimal(4));
-                product.setCreationTime(findAllResultSet.getDate(5).toLocalDate().atStartOfDay());
-                product.setExpirationDate(findAllResultSet.getDate(6).toLocalDate());
-                products.add(product);
-            }
+            products = getProducts(findAllResultSet);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return products;
     }
 
+    private static List<Product> getProducts(ResultSet findedProducts) throws SQLException {
+        List<Product> listOfProducts = new ArrayList<>();
+        while (findedProducts.next()) {
+            Product product = getOneProduct(findedProducts);
+            listOfProducts.add(product);
+        }
+        return listOfProducts;
+    }
+
     @Override
     public Product findOne(Long id) {
         Product product = null;
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(FIND_PRODUCT_BY_ID);
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_PRODUCT_BY_ID_QUERY);
             preparedStatement.setLong(1, id);
             ResultSet findProduct = preparedStatement.executeQuery();
-            product = getProduct(findProduct, id);
+            if (findProduct.next()) {
+                product = getOneProduct(findProduct);
+            } else {
+                throw new DaoOperationException("Product with id = " + id + " does not exist");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return product;
     }
 
-    private static Product getProduct(ResultSet data, Long id) throws SQLException {
+    private static Product getOneProduct(ResultSet data) throws SQLException {
         Product product = new Product();
-        if (data.next()) {
-            product.setId(data.getLong(1));
-            product.setName(data.getString(2));
-            product.setProducer(data.getString(3));
-            product.setPrice(data.getBigDecimal(4));
-            product.setExpirationDate(data.getDate(5).toLocalDate());
-            product.setCreationTime(data.getDate(6).toLocalDate().atStartOfDay());
-        } else {
-            throw new DaoOperationException("Product with id = " + id + " does not exist");
-        }
+        product.setId(data.getLong(1));
+        product.setName(data.getString(2));
+        product.setProducer(data.getString(3));
+        product.setPrice(data.getBigDecimal(4));
+        product.setExpirationDate(data.getDate(5).toLocalDate());
+        product.setCreationTime(data.getDate(6).toLocalDate().atStartOfDay());
         return product;
     }
 
     @Override
     public void update(Product product) {
-        checkIndexIsPresent(product.getId());
+        checkIdIsPresent(product.getId());
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement updateProduct = connection.prepareStatement(UPDATE_PRODUCT_BY_ID);
-            updateProduct.setString(1, product.getName());
-            updateProduct.setString(2, product.getProducer());
-            updateProduct.setBigDecimal(3, product.getPrice());
-            updateProduct.setDate(4, Date.valueOf(product.getExpirationDate()));
-            updateProduct.setLong(5, product.getId());
-            executeUpdate(updateProduct, product.getId());
+            PreparedStatement updateStatement = connection.prepareStatement(UPDATE_PRODUCT_BY_ID_QUERY);
+            setValues(updateStatement, product);
+            updateStatement.setLong(5, product.getId());
+            executeUpdate(updateStatement, product.getId());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -121,9 +118,9 @@ public class ProductDaoImpl implements ProductDao {
 
     @Override
     public void remove(Product product) {
-        checkIndexIsPresent(product.getId());
+        checkIdIsPresent(product.getId());
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement removeProduct = connection.prepareStatement(REMOVE_PRODUCT_BY_ID);
+            PreparedStatement removeProduct = connection.prepareStatement(REMOVE_PRODUCT_BY_ID_QUERY);
             removeProduct.setLong(1, product.getId());
             executeUpdate(removeProduct, product.getId());
         } catch (SQLException e) {
@@ -138,7 +135,7 @@ public class ProductDaoImpl implements ProductDao {
         }
     }
 
-    private static void checkIndexIsPresent(Object id) {
+    private static void checkIdIsPresent(Object id) {
         if (id == null) {
             throw new DaoOperationException("Cannot find a product without ID");
         }
