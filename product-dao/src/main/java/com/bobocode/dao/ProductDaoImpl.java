@@ -5,14 +5,12 @@ import com.bobocode.model.Product;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductDaoImpl implements ProductDao {
-    private static final String INSERT_SQL = "INSERT INTO products " +
-            "(name, producer, price, expiration_date) VALUES (?,?,?,?);";
-    private static final String GET_ALL_PRODUCTS_SQL = "SELECT * FROM products;";
-    private static final String FIND_ONE_BY_ID_SQL = "SELECT * FROM products  WHERE id = ?";
+    private static final String INSERT_SQL = "INSERT INTO products(name, producer, price, expiration_date) VALUES (?, ?, ?, ?);";
     private DataSource dataSource;
 
     public ProductDaoImpl(DataSource dataSource) {
@@ -33,42 +31,34 @@ public class ProductDaoImpl implements ProductDao {
             long id = resultSet.getLong(1);
             product.setId(id);
         } catch (SQLException e) {
-            throw new DaoOperationException("product was not saved!");
+            throw new DaoOperationException("product wasn't saved!!!");
         }
     }
 
     @Override
     public List<Product> findAll() {
-        List<Product> products = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(GET_ALL_PRODUCTS_SQL);
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM products;");
+            List<Product> allProducts = new ArrayList<>();
             while (resultSet.next()) {
-                Product myProduct = new Product();
-                myProduct.setId(resultSet.getLong("id"));
-                myProduct.setName(resultSet.getString("name"));
-                myProduct.setProducer(resultSet.getString("producer"));
-                myProduct.setPrice(resultSet.getBigDecimal("price"));
-                myProduct.setExpirationDate(resultSet.getDate("expiration_date").toLocalDate());
-                myProduct.setCreationTime(resultSet.getTimestamp("creation_time").toLocalDateTime());
-                products.add(myProduct);
+                Product product = new Product();
+                product.setId(resultSet.getLong("id"));
+                product.setName(resultSet.getString("name"));
+                product.setProducer(resultSet.getString("producer"));
+                product.setPrice(resultSet.getBigDecimal("price"));
+                product.setExpirationDate(resultSet.getDate("expiration_date").toLocalDate());
+                product.setCreationTime(resultSet.getTimestamp("creation_time").toLocalDateTime());
+                allProducts.add(product);
             }
-            return products;
+            return allProducts;
         } catch (SQLException e) {
-            throw new DaoOperationException("cant find any products");
+            throw new DaoOperationException("can't find product by id");
         }
     }
 
     @Override
     public Product findOne(Long id) {
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(FIND_ONE_BY_ID_SQL);
-            preparedStatement.setLong(1, id);
-            Product product = new Product();
-            ResultSet resultSet = preparedStatement.executeQuery();
-        } catch (SQLException e) {
-            throw new DaoOperationException("cant find one by id");
-        }
         return null;
     }
 
