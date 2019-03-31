@@ -34,7 +34,7 @@ public class ProductDaoImpl implements ProductDao {
 
     private void saveProduct(Product product, Connection connection) throws SQLException {
         PreparedStatement insertStatement = prepareInsertStatement(product, connection);
-        executeUpdate(insertStatement);
+        insertStatement.executeUpdate();
         Long id = fetchGeneratedId(insertStatement);
         product.setId(id);
     }
@@ -43,25 +43,18 @@ public class ProductDaoImpl implements ProductDao {
         try {
             PreparedStatement insertStatement = connection.prepareStatement(INSERT_SQL,
                     PreparedStatement.RETURN_GENERATED_KEYS); // this parameter will configure query to ask db for a generated keys
-            return fillInsertStatementWithParameters(insertStatement, product);
+            fillProductStatement(product, insertStatement);
+            return insertStatement;
         } catch (SQLException e) {
             throw new DaoOperationException(String.format("Cannot prepare statement for product: %s", product), e);
         }
     }
 
-    private PreparedStatement fillInsertStatementWithParameters(PreparedStatement insertStatement, Product product) throws SQLException {
-        insertStatement.setString(1, product.getName());
-        insertStatement.setString(2, product.getProducer());
-        insertStatement.setBigDecimal(3, product.getPrice());
-        insertStatement.setDate(4, Date.valueOf(product.getExpirationDate()));
-        return insertStatement;
-    }
-
-    private void executeUpdate(PreparedStatement insertStatement) throws SQLException {
-        int rowsAffected = insertStatement.executeUpdate(); // returns number of rows that were changed
-        if (rowsAffected == 0) {
-            throw new DaoOperationException("Nothing has been changed");
-        }
+    private void fillProductStatement(Product product, PreparedStatement updateStatement) throws SQLException {
+        updateStatement.setString(1, product.getName());
+        updateStatement.setString(2, product.getProducer());
+        updateStatement.setBigDecimal(3, product.getPrice());
+        updateStatement.setDate(4, Date.valueOf(product.getExpirationDate()));
     }
 
     private Long fetchGeneratedId(PreparedStatement insertStatement) throws SQLException {
@@ -158,21 +151,25 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     private void updateProduct(Product product, Connection connection) throws SQLException {
-        verifyProductId(product, connection);
+        checkIdIsNotNull(product);
         PreparedStatement updateStatement = prepareUpdateStatement(product, connection);
-        executeUpdate(updateStatement);
+        executeUpdateById(updateStatement, product.getId());
+    }
+
+    private void executeUpdateById(PreparedStatement insertStatement, Long productId) throws SQLException {
+        int rowsAffected = insertStatement.executeUpdate(); // returns number of rows that were changed
+        if (rowsAffected == 0) {
+            throw new DaoOperationException(String.format("Product with id = %d does not exist", productId));
+        }
     }
 
     private PreparedStatement prepareUpdateStatement(Product product, Connection connection) {
         try {
             PreparedStatement updateStatement = connection.prepareStatement(UPDATE_BY_ID_SLQ);
-            updateStatement.setString(1, product.getName());
-            updateStatement.setString(2, product.getProducer());
-            updateStatement.setBigDecimal(3, product.getPrice());
-            updateStatement.setDate(4, Date.valueOf(product.getExpirationDate()));
+            fillProductStatement(product, updateStatement);
             updateStatement.setLong(5, product.getId());
             return updateStatement;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new DaoOperationException(String.format("Cannot prepare update statement for product: %s", product), e);
         }
     }
@@ -188,9 +185,9 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     private void removeProduct(Product product, Connection connection) throws SQLException {
-        verifyProductId(product, connection);
+        checkIdIsNotNull(product);
         PreparedStatement removeStatement = prepareRemoveStatement(product, connection);
-        executeUpdate(removeStatement);
+        executeUpdateById(removeStatement, product.getId());
     }
 
     private PreparedStatement prepareRemoveStatement(Product product, Connection connection) {
@@ -203,12 +200,10 @@ public class ProductDaoImpl implements ProductDao {
         }
     }
 
-    // todo: optimize
-    private void verifyProductId(Product product, Connection connection) throws SQLException {
+    private void checkIdIsNotNull(Product product) {
         if (product.getId() == null) {
-            throw new DaoOperationException("Cannot find a product without ID");
+            throw new DaoOperationException("Product id cannot be null");
         }
-        findProductById(product.getId(), connection); // this method will throw an exception if product doesn't exist
     }
 }
 
