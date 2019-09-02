@@ -1,8 +1,8 @@
 package com.bobocode;
 
 import com.bobocode.util.JdbcUtil;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -13,14 +13,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 
 public class WallStreetDbInitializerTest {
     private static DataSource dataSource;
 
-    @BeforeClass
-    public static void init() throws SQLException {
+    @BeforeAll
+    static void init() throws SQLException {
         dataSource = JdbcUtil.createDefaultInMemoryH2DataSource();
         WallStreetDbInitializer dbInitializer = new WallStreetDbInitializer(dataSource);
         dbInitializer.init();
@@ -29,7 +32,7 @@ public class WallStreetDbInitializerTest {
     // table broker tests
 
     @Test
-    public void testTablesHaveCorrectNames() throws SQLException {
+    void testTablesHaveCorrectNames() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
 
@@ -51,7 +54,7 @@ public class WallStreetDbInitializerTest {
 
 
     @Test
-    public void testBrokerTablesHasPrimaryKey() throws SQLException {
+    void testBrokerTablesHasPrimaryKey() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -64,7 +67,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerTablePrimaryKeyHasCorrectName() throws SQLException {
+    void testBrokerTablePrimaryKeyHasCorrectName() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -78,7 +81,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerTablePrimaryKeyBasedOnIdField() throws SQLException {
+    void testBrokerTablePrimaryKeyBasedOnIdField() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -92,7 +95,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerTableHasCorrectUniqueConstraint() throws SQLException {
+    void testBrokerTableHasCorrectUniqueConstraint() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -108,7 +111,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerTableHasAllRequiredColumns() throws SQLException {
+    void testBrokerTableHasAllRequiredColumns() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -131,7 +134,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerTableRequiredColumnsHaveHaveNotNullConstraint() throws SQLException {
+    void testBrokerTableRequiredColumnsHaveHaveNotNullConstraint() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -145,7 +148,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerIdTypeIsBigint() throws SQLException {
+    void testBrokerIdTypeIsBigint() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -159,7 +162,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerTableStringColumnsHaveCorrectTypeAndLength() throws SQLException {
+    void testBrokerTableStringColumnsHaveCorrectTypeAndLength() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -175,7 +178,7 @@ public class WallStreetDbInitializerTest {
     // table sale_group test
 
     @Test
-    public void testSaleGroupTablesHasPrimaryKey() throws SQLException {
+    void testSaleGroupTablesHasPrimaryKey() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -188,7 +191,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testSaleGroupTablePrimaryKeyHasCorrectName() throws SQLException {
+    void testSaleGroupTablePrimaryKeyHasCorrectName() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -202,7 +205,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testSaleGroupTablePrimaryKeyBasedOnIdField() throws SQLException {
+    void testSaleGroupTablePrimaryKeyBasedOnIdField() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -216,7 +219,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testSaleGroupTableHasCorrectUniqueConstraint() throws SQLException {
+    void testSaleGroupTableHasCorrectUniqueConstraint() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -232,7 +235,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testSaleGroupTableHasAllRequiredColumns() throws SQLException {
+    void testSaleGroupTableHasAllRequiredColumns() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -246,7 +249,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testSaleGroupTableRequiredColumnsHaveHaveNotNullConstraint() throws SQLException {
+    void testSaleGroupTableRequiredColumnsHaveHaveNotNullConstraint() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -260,7 +263,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testSaleGroupIdTypeIsBigint() throws SQLException {
+    void testSaleGroupIdTypeIsBigint() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -274,7 +277,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testSaleGroupTableStringColumnsHaveCorrectTypeAndLength() throws SQLException {
+    void testSaleGroupTableStringColumnsHaveCorrectTypeAndLength() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -290,7 +293,7 @@ public class WallStreetDbInitializerTest {
     // table broker_sales_group tests
 
     @Test
-    public void testBrokerSaleGroupTablesHasForeignKeyToBroker() throws SQLException {
+    void testBrokerSaleGroupTablesHasForeignKeyToBroker() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -303,7 +306,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerSaleGroupTableForeignKeyToBrokerHasCorrectName() throws SQLException {
+    void testBrokerSaleGroupTableForeignKeyToBrokerHasCorrectName() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -317,7 +320,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerSaleGroupTablesHasForeignKeyToSalesGroup() throws SQLException {
+    void testBrokerSaleGroupTablesHasForeignKeyToSalesGroup() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -330,7 +333,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerSaleGroupTableForeignKeyToSalesGroupHasCorrectName() throws SQLException {
+    void testBrokerSaleGroupTableForeignKeyToSalesGroupHasCorrectName() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -344,7 +347,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerSaleGroupTableHasNotNullConstraint() throws SQLException {
+    void testBrokerSaleGroupTableHasNotNullConstraint() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -358,7 +361,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerSaleGroupForeignKeysTypeAreBigint() throws SQLException {
+    void testBrokerSaleGroupForeignKeysTypeAreBigint() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -371,7 +374,7 @@ public class WallStreetDbInitializerTest {
     }
 
     @Test
-    public void testBrokerSaleGroupTableHasCompositePrimaryKey() throws SQLException {
+    void testBrokerSaleGroupTableHasCompositePrimaryKey() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
