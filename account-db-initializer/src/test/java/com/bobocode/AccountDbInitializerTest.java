@@ -1,10 +1,8 @@
 package com.bobocode;
 
 import com.bobocode.util.JdbcUtil;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -14,22 +12,22 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(JUnit4.class)
+
 public class AccountDbInitializerTest {
     private static DataSource dataSource;
 
-    @BeforeClass
-    public static void init() throws SQLException {
+    @BeforeAll
+    static void init() throws SQLException {
         dataSource = JdbcUtil.createDefaultInMemoryH2DataSource();
         AccountDbInitializer dbInitializer = new AccountDbInitializer(dataSource);
         dbInitializer.init();
     }
 
     @Test
-    public void testTableHasCorrectName() throws SQLException {
+    void testTableHasCorrectName() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
 
@@ -42,7 +40,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testTableHasPrimaryKey() throws SQLException {
+    void testTableHasPrimaryKey() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -55,7 +53,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testPrimaryKeyHasCorrectName() throws SQLException {
+    void testPrimaryKeyHasCorrectName() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -69,7 +67,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testPrimaryKeyBasedOnIdField() throws SQLException {
+    void testPrimaryKeyBasedOnIdField() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -83,7 +81,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testTableHasCorrectAlternativeKey() throws SQLException {
+    void testTableHasCorrectAlternativeKey() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
@@ -99,7 +97,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testTableHasAllRequiredColumns() throws SQLException {
+    void testTableHasAllRequiredColumns() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -123,7 +121,7 @@ public class AccountDbInitializerTest {
 
 
     @Test
-    public void testRequiredColumnsHaveHaveNotNullConstraint() throws SQLException {
+    void testRequiredColumnsHaveHaveNotNullConstraint() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -137,7 +135,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testIdHasTypeBiInteger() throws SQLException {
+    void testIdHasTypeBiInteger() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -151,7 +149,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testCreationTimeHasTypeTimestamp() throws SQLException {
+    void testCreationTimeHasTypeTimestamp() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -165,7 +163,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testCreationTimeHasDefaultValue() throws SQLException {
+    void testCreationTimeHasDefaultValue() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -179,7 +177,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testEmailColumnHasCorrectSize() throws SQLException {
+    void testEmailColumnHasCorrectSize() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -195,7 +193,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testBirthdayColumnHasCorrectType() throws SQLException {
+    void testBirthdayColumnHasCorrectType() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -209,7 +207,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testBalanceColumnHasCorrectType() throws SQLException {
+    void testBalanceColumnHasCorrectType() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -227,7 +225,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testBalanceIsNotMandatory() throws SQLException {
+    void testBalanceIsNotMandatory() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -241,7 +239,7 @@ public class AccountDbInitializerTest {
     }
 
     @Test
-    public void testStringColumnsHaveCorrectTypeAndLength() throws SQLException {
+    void testStringColumnsHaveCorrectTypeAndLength() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS" +
