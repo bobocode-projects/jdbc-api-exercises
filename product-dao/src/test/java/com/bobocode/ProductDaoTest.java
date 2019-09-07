@@ -7,10 +7,8 @@ import com.bobocode.model.Product;
 import com.bobocode.util.JdbcUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
@@ -21,14 +19,17 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@RunWith(JUnit4.class)
 public class ProductDaoTest {
     private static ProductDao productDao;
 
-    @BeforeClass
-    public static void init() throws SQLException {
+    @BeforeAll
+    static void init() throws SQLException {
         DataSource h2DataSource = JdbcUtil.createDefaultInMemoryH2DataSource();
         createAccountTable(h2DataSource);
         productDao = new ProductDaoImpl(h2DataSource);
@@ -62,7 +63,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testSave() {
+    void testSave() {
         Product fanta = createTestFantaProduct();
 
         int productsCountBeforeInsert = productDao.findAll().size();
@@ -75,7 +76,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testSaveInvalidProduct() {
+    void testSaveInvalidProduct() {
         Product invalidTestProduct = createInvalidTestProduct();
 
         try {
@@ -104,7 +105,7 @@ public class ProductDaoTest {
 
 
     @Test
-    public void testFindAll() {
+    void testFindAll() {
         List<Product> newProducts = createTestProductList();
         List<Product> oldProducts = productDao.findAll();
         newProducts.forEach(productDao::save);
@@ -138,7 +139,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testFindById() {
+    void testFindById() {
         Product testProduct = generateTestProduct();
         productDao.save(testProduct);
 
@@ -152,7 +153,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testFindByNotExistingId() {
+    void testFindByNotExistingId() {
         long invalidId = -1L;
         try {
             productDao.findOne(invalidId);
@@ -164,7 +165,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testUpdate() {
+    void testUpdate() {
         Product testProduct = generateTestProduct();
         productDao.save(testProduct);
         List<Product> productsBeforeUpdate = productDao.findAll();
@@ -206,7 +207,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testUpdateNotStored() {
+    void testUpdateNotStored() {
         Product notStoredProduct = generateTestProduct();
 
         try {
@@ -219,7 +220,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testUpdateProductWithInvalidId() {
+    void testUpdateProductWithInvalidId() {
         Product testProduct = generateTestProduct();
         long invalidId = -1L;
         testProduct.setId(invalidId);
@@ -234,7 +235,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testRemove() {
+    void testRemove() {
         Product testProduct = generateTestProduct();
         productDao.save(testProduct);
         List<Product> productsBeforeRemove = productDao.findAll();
@@ -247,7 +248,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testRemoveNotStored() {
+    void testRemoveNotStored() {
         Product notStoredProduct = generateTestProduct();
 
         try {
@@ -260,7 +261,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testRemoveProductWithInvalidId() {
+    void testRemoveProductWithInvalidId() {
         Product testProduct = generateTestProduct();
         long invalidId = -1L;
         testProduct.setId(invalidId);
