@@ -215,7 +215,7 @@ public class ProductDaoTest {
             fail("Exception was't thrown");
         } catch (Exception e) {
             assertEquals(DaoOperationException.class, e.getClass());
-            assertEquals("Cannot find a product without ID", e.getMessage());
+            assertEquals("Product id cannot be null", e.getMessage());
         }
     }
 
@@ -256,7 +256,7 @@ public class ProductDaoTest {
             fail("Exception was't thrown");
         } catch (Exception e) {
             assertEquals(DaoOperationException.class, e.getClass());
-            assertEquals("Cannot find a product without ID", e.getMessage());
+            assertEquals("Product id cannot be null", e.getMessage());
         }
     }
 
