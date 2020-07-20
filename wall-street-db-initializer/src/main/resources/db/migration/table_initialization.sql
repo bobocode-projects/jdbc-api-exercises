@@ -5,7 +5,7 @@ WallStreet database should store information about brokers, sales groups and its
 Each broker must have a unique username. First and last names are also mandatory.
 
 A sales group is a special group that has its own restrictions. Sale groups are used to organize the work of brokers.
-Each group mush have a unique name, transaction type (string), and max transaction amount (a number). All field are
+Each group must have a unique name, transaction type (string), and max transaction amount (a number). All field are
 mandatory.
 
 A sales group can consists of more than one broker, while each broker can be associated with more than one sale group.
